@@ -90,3 +90,7 @@ The extension runs only on `drupal.org` and its subdomains. Its only permission 
 | `src/lightbox.js` | Gallery, rendered in a Shadow DOM so the site's CSS can't affect it |
 | `popup/` | Settings popup |
 | `icons/` | Toolbar and store icons |
+
+## License
+
+[MIT](LICENSE)
