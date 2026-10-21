@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Drupal.org Lightbox &amp; Dark Mode</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="panel">
+    <header class="head">
+      <img src="../icons/icon-32.png" width="20" height="20" alt="">
+      <h1>Drupal.org</h1>
+    </header>
+
+    <section class="group" aria-labelledby="theme-label">
+      <h2 id="theme-label">Appearance</h2>
+      <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
+        <label>
+          <input type="radio" name="theme" value="light">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            Light
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="theme" value="dark">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+            Dark
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="theme" value="system">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            System
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <section class="group">
+      <label class="switch">
+        <span class="switch-text">
+          <span class="switch-title">Image gallery</span>
+          <span class="switch-hint">Open images in a fullscreen viewer</span>
+        </span>
+        <input type="checkbox" name="lightbox" role="switch">
+        <span class="track" aria-hidden="true"></span>
+      </label>
+    </section>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
