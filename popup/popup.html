@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Drupal.org Lightbox &amp; Dark Mode</title>
+  <title>Drupal++</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <main class="panel">
     <header class="head">
-      <img src="../icons/icon-32.png" width="20" height="20" alt="">
-      <h1>Drupal.org</h1>
+      <img src="../icons/icon.svg" width="24" height="24" alt="">
+      <h1>Drupal++</h1>
     </header>
 
     <section class="group" aria-labelledby="theme-label">
@@ -39,13 +39,51 @@
       </div>
     </section>
 
-    <section class="group">
+    <section class="features" aria-labelledby="features-label">
+      <h2 id="features-label">Features</h2>
+
       <label class="switch">
         <span class="switch-text">
           <span class="switch-title">Image gallery</span>
           <span class="switch-hint">Open images in a fullscreen viewer</span>
         </span>
         <input type="checkbox" name="lightbox" role="switch">
+        <span class="track" aria-hidden="true"></span>
+      </label>
+
+      <label class="switch">
+        <span class="switch-text">
+          <span class="switch-title">Issue reading</span>
+          <span class="switch-hint">Wider page and a sticky sidebar</span>
+        </span>
+        <input type="checkbox" name="reading" role="switch">
+        <span class="track" aria-hidden="true"></span>
+      </label>
+
+      <label class="switch">
+        <span class="switch-text">
+          <span class="switch-title">Copy</span>
+          <span class="switch-hint">Copy the page link or a code block</span>
+        </span>
+        <input type="checkbox" name="copy" role="switch">
+        <span class="track" aria-hidden="true"></span>
+      </label>
+
+      <label class="switch">
+        <span class="switch-text">
+          <span class="switch-title">API docs</span>
+          <span class="switch-hint">Sticky navigation</span>
+        </span>
+        <input type="checkbox" name="apiDocs" role="switch">
+        <span class="track" aria-hidden="true"></span>
+      </label>
+
+      <label class="switch">
+        <span class="switch-text">
+          <span class="switch-title">Keyboard</span>
+          <span class="switch-hint">j and k move between comments</span>
+        </span>
+        <input type="checkbox" name="keys" role="switch">
         <span class="track" aria-hidden="true"></span>
       </label>
     </section>

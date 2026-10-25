@@ -1,15 +1,23 @@
 /**
- * Settings popup: theme mode and the image gallery switch.
+ * Settings popup. Feature switches match the keys read in src/features.js.
  */
-const DEFAULTS = { theme: 'system', lightbox: true };
+const DEFAULTS = {
+  theme: 'system',
+  lightbox: true,
+  reading: true,
+  copy: true,
+  apiDocs: true,
+  keys: true,
+};
 
 const themeInputs = document.querySelectorAll('input[name="theme"]');
-const lightboxInput = document.querySelector('input[name="lightbox"]');
+const switches = [...document.querySelectorAll('.switch input')];
 
-function render({ theme, lightbox }) {
-  for (const input of themeInputs) input.checked = input.value === theme;
-  lightboxInput.checked = lightbox;
-  document.documentElement.dataset.theme = theme;
+function render(stored) {
+  const settings = { ...DEFAULTS, ...stored };
+  for (const input of themeInputs) input.checked = input.value === settings.theme;
+  for (const input of switches) input.checked = !!settings[input.name];
+  document.documentElement.dataset.theme = settings.theme;
 }
 
 chrome.storage.sync.get(DEFAULTS, render);
@@ -21,6 +29,8 @@ for (const input of themeInputs) {
   });
 }
 
-lightboxInput.addEventListener('change', () => {
-  chrome.storage.sync.set({ lightbox: lightboxInput.checked });
-});
+for (const input of switches) {
+  input.addEventListener('change', () => {
+    chrome.storage.sync.set({ [input.name]: input.checked });
+  });
+}

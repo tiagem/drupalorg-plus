@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Drupal.org Lightbox & Dark Mode",
-  "short_name": "d.o Plus",
-  "version": "1.0.1",
-  "description": "Opens images on drupal.org in a fullscreen gallery and adds a light, dark and system theme to the site.",
+  "name": "Drupal++",
+  "short_name": "Drupal++",
+  "version": "1.1.0",
+  "description": "Dark mode, an image gallery, and optional reading tools for drupal.org. Each tool can be turned off.",
   "permissions": ["storage"],
   "icons": {
     "16": "icons/icon-16.png",
@@ -12,7 +12,7 @@
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_title": "Drupal.org Lightbox & Dark Mode",
+    "default_title": "Drupal++",
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
@@ -27,7 +27,7 @@
     },
     {
       "matches": ["https://drupal.org/*", "https://*.drupal.org/*"],
-      "js": ["src/lightbox.js"],
+      "js": ["src/lightbox.js", "src/features.js"],
       "run_at": "document_idle"
     }
   ]
