@@ -1,13 +1,18 @@
 /**
- * Settings popup. Feature switches match the keys read in src/features.js.
+ * Settings popup. Feature switches match the keys read in src/features.js
+ * and src/layout.js.
  */
 const DEFAULTS = {
   theme: 'system',
+  wide: false,
+  polish: false,
   lightbox: true,
   reading: true,
   copy: true,
   apiDocs: true,
   keys: true,
+  mentions: true,
+  newestFirst: false,
 };
 
 const themeInputs = document.querySelectorAll('input[name="theme"]');

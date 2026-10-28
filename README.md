@@ -6,6 +6,10 @@ Fullscreen image gallery, a dark theme, and reading tools for [drupal.org](https
 
 **Appearance.** Light, Dark, or System. System follows the operating system.
 
+**Wide layout.** Off by default. Pages run up to 1280px wide instead of stopping at 960px. Issue lists use the full width.
+
+**Visual polish.** Off by default. One set of corners, heights and lines across the site: text fields, selects and buttons share a height and radius, selects get a roomier arrow, sidebar blocks, form sections, release boxes and dashboard blocks share a radius, and comments get a single line between them. The issue form's fields sit on an even grid, user profiles get three aligned columns, issue and comment text is larger, and in issue lists the filters stay on one row, the title gets more room and dates stay on one line. Colors are untouched, so the dark theme still applies.
+
 **Image gallery.** Click an image to open it fullscreen.
 
 **Issue reading.** The issue page gets wider, and the sidebar stays put while you scroll. The status, related issues, and contribution record stay in that column. When you are logged in, the comment form stays under the comments.
@@ -17,6 +21,10 @@ Fullscreen image gallery, a dark theme, and reading tools for [drupal.org](https
 **API docs.** On [api.drupal.org](https://api.drupal.org), the side navigation stays fixed while you scroll.
 
 ![API page with the navigation fixed on the side](.github/screenshots/api-nav.png)
+
+**Mentions.** An @name in an issue or a comment links to that person's profile and gets a blue highlight. When you are logged in and someone mentions you, the highlight is amber instead. Doc tags such as `@param` and anything inside code are left alone.
+
+**Newest first.** Off by default. Comments, and the merge request activity between them, run from the latest to the oldest. Turning it off puts them back in their original order.
 
 **Keyboard.** `j` and `k` move between comments.
 

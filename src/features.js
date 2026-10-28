@@ -4,6 +4,9 @@
  * Issue pages are node-type-project-issue. The status lives in
  * #sidebar-first and the related issues in #aside, both floated right.
  * Comments are .comment.
+ *
+ * Mentions are plain text on drupal.org. The viewer's own name comes from
+ * /user, which redirects to /u/<name> when logged in.
  */
 (() => {
   'use strict';
@@ -13,12 +16,23 @@
     copy: true,
     apiDocs: true,
     keys: true,
+    mentions: true,
+    newestFirst: false,
   };
 
+  const VIEWER_KEY = 'dppViewer';
+  const VIEWER_TTL = 24 * 60 * 60 * 1000;
+  const MENTION = /(^|[^\w@./:-])@([a-z0-9](?:[\w.-]*[a-z0-9_])?)(?![\w(])/gi;
+  const NOT_USERS = new Set([
+    'abstract', 'api', 'author', 'code', 'covers', 'coversdefaultclass', 'dataprovider', 'depends',
+    'deprecated', 'endcode', 'file', 'group', 'ingroup', 'inheritdoc', 'internal', 'link', 'method',
+    'param', 'property', 'return', 'returns', 'see', 'since', 'throws', 'todo', 'trigger', 'var',
+  ]);
+
   const CSS = `
-    html.dpp-reading body.node-type-project-issue .container-12,
-    html.dpp-reading body.page-node-type-project-issue .container-12,
-    html.dpp-reading body.page-node-type-project-issue .l-section-container.page-inner {
+    html.dpp-reading:not(.dpp-wide) body.node-type-project-issue .container-12,
+    html.dpp-reading:not(.dpp-wide) body.page-node-type-project-issue .container-12,
+    html.dpp-reading:not(.dpp-wide) body.page-node-type-project-issue .l-section-container.page-inner {
       width: min(1240px, calc(100% - 32px));
       max-width: 1240px;
     }
@@ -59,6 +73,23 @@
       width: auto !important;
       clear: both;
       margin-right: 0;
+    }
+    a.dpp-mention {
+      margin-inline: -0.1em;
+      padding: 0 0.2em;
+      border-radius: 4px;
+      background: color-mix(in srgb, #0678be 14%, transparent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    a.dpp-mention:hover,
+    a.dpp-mention:focus-visible {
+      text-decoration: underline;
+    }
+    a.dpp-mention.dpp-mention--me {
+      background: color-mix(in srgb, #f5a623 38%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, #f5a623 75%, transparent);
+      color: inherit;
     }
     .comment.dpp-current {
       outline: 2px solid #0678be;
@@ -126,6 +157,7 @@
 
   let settings = { ...DEFAULTS };
   let commentIndex = -1;
+  let viewer = null;
 
   function isIssuePage() {
     const name = document.body?.className || '';
@@ -178,7 +210,29 @@
     setTimeout(() => { button.textContent = previous; }, 1200);
   }
 
+  function reorder(parent, items) {
+    const last = items.reduce((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? b : a));
+    const ref = last.nextSibling;
+    for (const item of items) parent.insertBefore(item, ref);
+  }
+
+  function restoreOrder() {
+    document.querySelectorAll('[data-dpp-newest]').forEach((wrapper) => {
+      const items = [...wrapper.children].filter((el) => el.dataset.dppOrder !== undefined);
+      items.sort((a, b) => a.dataset.dppOrder - b.dataset.dppOrder);
+      if (items.length) reorder(wrapper, items);
+      items.forEach((el) => delete el.dataset.dppOrder);
+      delete wrapper.dataset.dppNewest;
+    });
+  }
+
   function clearPage() {
+    restoreOrder();
+    document.querySelectorAll('a.dpp-mention').forEach((link) => {
+      const parent = link.parentNode;
+      link.replaceWith(link.textContent);
+      parent.normalize();
+    });
     document.querySelectorAll('.dpp-code-wrap').forEach((wrap) => {
       const block = wrap.querySelector('pre, div.codeblock');
       if (block) wrap.before(block);
@@ -264,6 +318,96 @@
     }
   }
 
+  async function loadViewer() {
+    if (!document.body.classList.contains('logged-in')) {
+      try { localStorage.removeItem(VIEWER_KEY); } catch { /* Storage can be blocked. */ }
+      return null;
+    }
+    try {
+      const cached = JSON.parse(localStorage.getItem(VIEWER_KEY));
+      if (cached && Date.now() - cached.at < VIEWER_TTL) return cached.name;
+    } catch {
+      // No cache yet, or storage is blocked.
+    }
+    try {
+      const response = await fetch('/user', { method: 'HEAD', credentials: 'same-origin' });
+      const name = new URL(response.url).pathname.match(/^\/u\/([^/]+)/)?.[1]?.toLowerCase();
+      if (!name) return null;
+      try { localStorage.setItem(VIEWER_KEY, JSON.stringify({ name, at: Date.now() })); } catch { /* Storage can be blocked. */ }
+      return name;
+    } catch {
+      return null;
+    }
+  }
+
+  function markViewer() {
+    document.querySelectorAll('a.dpp-mention').forEach((link) => {
+      link.classList.toggle('dpp-mention--me', !!viewer && link.dataset.user === viewer);
+    });
+  }
+
+  function applyMentions() {
+    const profiles = new Map();
+    for (const link of document.querySelectorAll('a.username[href^="/u/"]')) {
+      profiles.set(link.textContent.trim().toLowerCase(), link.getAttribute('href'));
+    }
+
+    const texts = [];
+    for (const field of document.querySelectorAll('.field-name-body, .field-name-comment-body')) {
+      const walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, {
+        acceptNode: (node) => (node.parentElement.closest('a, pre, code, kbd, textarea, .codeblock')
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_ACCEPT),
+      });
+      while (walker.nextNode()) {
+        if (walker.currentNode.textContent.includes('@')) texts.push(walker.currentNode);
+      }
+    }
+
+    for (const node of texts) {
+      const text = node.textContent;
+      const parts = [];
+      let last = 0;
+      for (const match of text.matchAll(MENTION)) {
+        const name = match[2];
+        const user = name.toLowerCase();
+        if (NOT_USERS.has(user) && !profiles.has(user)) continue;
+        const start = match.index + match[1].length;
+        parts.push(text.slice(last, start));
+        const link = document.createElement('a');
+        link.className = 'dpp-mention';
+        link.href = profiles.get(user) || `/u/${encodeURIComponent(user)}`;
+        link.dataset.user = user;
+        link.textContent = `@${name}`;
+        parts.push(link);
+        last = start + name.length + 1;
+      }
+      if (!parts.length) continue;
+      parts.push(text.slice(last));
+      node.replaceWith(...parts.filter((part) => part !== ''));
+    }
+    markViewer();
+  }
+
+  function applyNewestFirst() {
+    const lists = [
+      ...[...document.querySelectorAll('.comment-wrapper')].map((wrapper) => [
+        wrapper,
+        [...wrapper.children].filter((el) => el.matches('.comment, .merge-request-activity')),
+      ]),
+      ...[...document.querySelectorAll('.comment-wrapper > .merge-request-activity')].map((list) => [
+        list,
+        [...list.children].filter((el) => el.matches('li')),
+      ]),
+    ];
+    for (const [parent, items] of lists) {
+      if (items.length < 2) continue;
+      items.forEach((el, index) => { el.dataset.dppOrder = index; });
+      parent.dataset.dppNewest = '';
+      reorder(parent, items.reverse());
+    }
+  }
+
   function applyApi() {
     if (location.hostname !== 'api.drupal.org') return;
     document.documentElement.classList.add('dpp-api');
@@ -298,6 +442,8 @@
     if (settings.reading) applyReading();
     if (settings.copy) applyCopy();
     if (settings.apiDocs) applyApi();
+    if (settings.mentions) applyMentions();
+    if (settings.newestFirst) applyNewestFirst();
   }
 
   const style = document.createElement('style');
@@ -310,6 +456,10 @@
     chrome.storage.sync.get(DEFAULTS, (stored) => {
       settings = { ...DEFAULTS, ...stored };
       apply();
+    });
+    loadViewer().then((name) => {
+      viewer = name;
+      markViewer();
     });
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'sync') return;
